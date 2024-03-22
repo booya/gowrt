@@ -62,11 +62,8 @@ func New(host string, options ...Option) *client {
 
 func (c *client) ApiCall(call rpcCall) ([]byte, error) {
 	var response rpcResponse
-	// add token to params
-	params := []interface{}{c.ubusSession.UbusRpcSession}
-	call.Params = append(params, call.Params...)
-
-	jsonBody, err := json.Marshal(call)
+	// add ubus session to params
+	jsonBody, err := json.Marshal(call.toApiPayload(c.ubusSession))
 	if err != nil {
 		return nil, fmt.Errorf("marshal api request: %s", err)
 	}

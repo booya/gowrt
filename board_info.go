@@ -28,12 +28,8 @@ type BoardInfo struct {
 
 func (c *client) GetBoardInfo(id string) (BoardInfo, error) {
 	var boardInfo BoardInfo
-	call := rpcCall{
-		JsonRpc: "2.0",
-		Id:      id,
-		Method:  "call",
-		Params:  []interface{}{"file", "read", map[string]string{"path": "/etc/board.json"}},
-	}
+	params := map[string]interface{}{"path": "/etc/board.json"}
+	call := NewRpcCall(id, "call", "file", "read", params)
 	response, err := c.ApiCall(call)
 	if err != nil {
 		return boardInfo, fmt.Errorf("get board info: %s", err)

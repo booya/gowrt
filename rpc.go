@@ -15,10 +15,22 @@ const (
 )
 
 type rpcCall struct {
+	Id     string    `json:"id"`
+	Method string    `json:"method"`
+	Params rpcParams `json:"params"`
+}
+
+type apiPayload struct {
 	JsonRpc string        `json:"jsonrpc"`
 	Id      string        `json:"id"`
 	Method  string        `json:"method"`
 	Params  []interface{} `json:"params"`
+}
+
+type rpcParams struct {
+	Path    string
+	Method  string
+	Message map[string]interface{}
 }
 
 type rpcResponse struct {
@@ -31,4 +43,30 @@ type rpcResponse struct {
 type rpcError struct {
 	Code    int
 	Message string
+}
+
+func NewRpcCall(id, method, path, ubusMethod string, body map[string]interface{}) rpcCall {
+	return rpcCall{
+		Id:      id,
+		Method:  method,
+		Params: rpcParams{
+			Path:    path,
+			Method:  ubusMethod,
+			Message: body,
+		},
+	}
+}
+
+func (c rpcCall) toApiPayload(s UbusSession) apiPayload {
+	return apiPayload{
+		JsonRpc: "2.0",
+		Id:      c.Id,
+		Method:  c.Method,
+		Params: []interface{}{
+			s.UbusRpcSession,
+			c.Params.Path,
+			c.Params.Method,
+			c.Params.Message,
+		},
+	}
 }
