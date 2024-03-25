@@ -10,28 +10,28 @@ import (
 	"time"
 )
 
-type client struct {
+type Client struct {
 	url         url.URL
 	httpClient  *http.Client
 	ubusSession UbusSession
 }
 
-type Option func(*client)
+type Option func(*Client)
 
 func WithTimeout(t time.Duration) Option {
-	return func(c *client) {
+	return func(c *Client) {
 		c.httpClient.Timeout = t
 	}
 }
 
 func WithHttpTransport(t time.Duration) Option {
-	return func(c *client) {
+	return func(c *Client) {
 		c.url.Scheme = "http"
 	}
 }
 
 func WithInsecureTls() Option {
-	return func(c *client) {
+	return func(c *Client) {
 		c.httpClient.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
@@ -40,8 +40,8 @@ func WithInsecureTls() Option {
 	}
 }
 
-func New(host string, options ...Option) *client {
-	client := &client{
+func New(host string, options ...Option) *Client {
+	client := &Client{
 		url: url.URL{
 			Scheme: "https",
 			Host:   host,
@@ -60,9 +60,13 @@ func New(host string, options ...Option) *client {
 	return client
 }
 
-func (c *client) ApiCall(call rpcCall) ([]byte, error) {
+func (c *Client) ApiCall(call rpcCall) ([]byte, error) {
 	var response rpcResponse
-	// add ubus session to params
+	// ensure call is valid
+	err := call.validate()
+	if err != nil {
+		return nil, fmt.Errorf("invalid call: %s", err)
+	}
 	jsonBody, err := json.Marshal(call.toApiPayload(c.ubusSession))
 	if err != nil {
 		return nil, fmt.Errorf("marshal api request: %s", err)
@@ -100,11 +104,12 @@ func (c *client) ApiCall(call rpcCall) ([]byte, error) {
 	// that should be checked, and the second entry is the actual data the
 	// caller cares about.
 	for i, r := range response.Result {
-		if i == 0 {
+		switch i {
+		case 0:
 			if r != float64(0) {
 				return nil, fmt.Errorf("call failed: unexpected response: %d", r)
 			}
-		} else if i == 1 {
+		case 1:
 			// Put the response back into json for the caller to
 			// unmarshal into the proper struct type
 			responseData, err := json.Marshal(r)
@@ -112,7 +117,7 @@ func (c *client) ApiCall(call rpcCall) ([]byte, error) {
 				return nil, fmt.Errorf("remarshal api response: %s", err)
 			}
 			return responseData, nil
-		} else {
+		default:
 			return nil, fmt.Errorf("unexpected additional response: %s", r)
 		}
 	}

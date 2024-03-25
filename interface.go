@@ -2,6 +2,7 @@ package gowrt
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type InterfaceConfiguration struct {
@@ -18,8 +19,7 @@ type InterfaceConfiguration struct {
 	ReqPrefix  string `json:"reqprefix"`
 }
 
-func (c *client) GetInterfaceConfiguration(id, name string) (InterfaceConfiguration, error) {
-	var iface InterfaceConfiguration
+func (c *Client) GetInterfaceConfiguration(id, name string) (InterfaceConfiguration, error) {
 	params := map[string]interface{}{
 		"config": "network",
 		"type":   "interface",
@@ -27,18 +27,18 @@ func (c *client) GetInterfaceConfiguration(id, name string) (InterfaceConfigurat
 	call := NewRpcCall(id, "call", "uci", "get", params)
 	response, err := c.ApiCall(call)
 	if err != nil {
-		return iface, err
+		return InterfaceConfiguration{}, err
 	}
 
 	var interfaces map[string]map[string]InterfaceConfiguration
 	if err := json.Unmarshal(response, &interfaces); err != nil {
-		return iface, err
+		return InterfaceConfiguration{}, err
 	}
-	for ifaceName, config := range interfaces["values"] {
-		if ifaceName != name {
-			continue
+
+	if values, ok := interfaces["values"]; ok {
+		if iface, ifok := values[name]; ifok {
+			return iface, nil
 		}
-		iface = config
 	}
-	return iface, nil
+	return InterfaceConfiguration{}, fmt.Errorf("interface %s not found", name)
 }

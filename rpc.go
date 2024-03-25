@@ -1,5 +1,9 @@
 package gowrt
 
+import (
+	"fmt"
+)
+
 type RpcStatusCode int64
 
 const (
@@ -41,20 +45,27 @@ type rpcResponse struct {
 }
 
 type rpcError struct {
-	Code    int
-	Message string
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 func NewRpcCall(id, method, path, ubusMethod string, body map[string]interface{}) rpcCall {
 	return rpcCall{
-		Id:      id,
-		Method:  method,
+		Id:     id,
+		Method: method,
 		Params: rpcParams{
 			Path:    path,
 			Method:  ubusMethod,
 			Message: body,
 		},
 	}
+}
+
+func (c rpcCall) validate() error {
+	if c.Method != "call" {
+		return fmt.Errorf("unsupported rpc method: %s", c.Method)
+	}
+	return nil
 }
 
 func (c rpcCall) toApiPayload(s UbusSession) apiPayload {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (c *client) Login(username, password string) error {
+func (c *Client) Login(username, password string) error {
 	body := map[string]interface{}{"username": username, "password": password}
 	call := NewRpcCall("1", "call", "session", "login", body)
 	response, err := c.ApiCall(call)
