@@ -82,10 +82,10 @@ type NetworkStatus struct {
 	Statistics                 NetworkStatistics `json:"statistics"`
 }
 
-func (c *Client) GetNetworkStatus(id, iface string) (NetworkStatus, error) {
+func (c *Client) GetNetworkStatus(iface string) (NetworkStatus, error) {
 	var networkStatus NetworkStatus
 	body := map[string]interface{}{"name": iface}
-	call := NewRpcCall(id, "call", "network.device", "status", body)
+	call := NewRpcCall("call", "network.device", "status", body)
 	response, err := c.ApiCall(call)
 	if err != nil {
 		return networkStatus, fmt.Errorf("get network status: %s", err)

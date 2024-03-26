@@ -26,10 +26,10 @@ type BoardInfo struct {
 	} `json:"system"`
 }
 
-func (c *Client) GetBoardInfo(id string) (BoardInfo, error) {
+func (c *Client) GetBoardInfo() (BoardInfo, error) {
 	var boardInfo BoardInfo
 	params := map[string]interface{}{"path": "/etc/board.json"}
-	call := NewRpcCall(id, "call", "file", "read", params)
+	call := NewRpcCall("call", "file", "read", params)
 	response, err := c.ApiCall(call)
 	if err != nil {
 		return boardInfo, fmt.Errorf("get board info: %s", err)

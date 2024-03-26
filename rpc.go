@@ -2,6 +2,8 @@ package gowrt
 
 import (
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type RpcStatusCode int64
@@ -49,9 +51,9 @@ type rpcError struct {
 	Message string `json:"message"`
 }
 
-func NewRpcCall(id, method, path, ubusMethod string, body map[string]interface{}) rpcCall {
+func NewRpcCall(method, path, ubusMethod string, body map[string]interface{}) rpcCall {
 	return rpcCall{
-		Id:     id,
+		Id:     uuid.New().String(),
 		Method: method,
 		Params: rpcParams{
 			Path:    path,

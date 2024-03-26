@@ -19,12 +19,12 @@ type InterfaceConfiguration struct {
 	ReqPrefix  string `json:"reqprefix"`
 }
 
-func (c *Client) GetInterfaceConfiguration(id, name string) (InterfaceConfiguration, error) {
+func (c *Client) GetInterfaceConfiguration(name string) (InterfaceConfiguration, error) {
 	params := map[string]interface{}{
 		"config": "network",
 		"type":   "interface",
 	}
-	call := NewRpcCall(id, "call", "uci", "get", params)
+	call := NewRpcCall("call", "uci", "get", params)
 	response, err := c.ApiCall(call)
 	if err != nil {
 		return InterfaceConfiguration{}, err
