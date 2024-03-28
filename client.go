@@ -102,12 +102,13 @@ func (c *Client) ApiCall(call rpcCall) ([]byte, error) {
 	//
 	// result is a two-item list where the first value is an rpc/ubus status code
 	// that should be checked, and the second entry is the actual data the
-	// caller cares about.
+	// caller cares about. Or nothing, in the case of a set call.
 	for i, r := range response.Result {
 		switch i {
 		case 0:
+			status := getUbusStatus(int64(r.(float64)))
 			if r != float64(0) {
-				return nil, fmt.Errorf("call failed: unexpected response: %d", r)
+				return nil, fmt.Errorf("call failed: unexpected response: %#v", status)
 			}
 		case 1:
 			// Put the response back into json for the caller to
@@ -120,6 +121,10 @@ func (c *Client) ApiCall(call rpcCall) ([]byte, error) {
 		default:
 			return nil, fmt.Errorf("unexpected additional response: %s", r)
 		}
+	}
+	if len(response.Result) == 1 {
+		// no result
+		return nil, nil
 	}
 	// should never reach here
 	return nil, fmt.Errorf("unknown error")

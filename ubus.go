@@ -2,6 +2,8 @@ package gowrt
 
 type UbusStatusCode int64
 
+// var ubusStatusCodes
+
 const (
 	UBUS_STATUS_OK                UbusStatusCode = 0
 	UBUS_STATUS_INVALID_COMMAND   UbusStatusCode = 1
@@ -23,4 +25,8 @@ type UbusSession struct {
 	Expires        int                    `json:"expires"`
 	Acls           map[string]interface{} `json:"acls"`
 	Data           map[string]interface{} `json:"data"`
+}
+
+func getUbusStatus(c int64) UbusStatusCode {
+	return UbusStatusCode(c)
 }
